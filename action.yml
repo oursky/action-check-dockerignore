@@ -1,0 +1,29 @@
+name: "check_dockerignore"
+description: "Check .dockerignore against Git-ignored files"
+inputs:
+  build-context:
+    description: "The path to the build context"
+    required: true
+  dockerfile:
+    description: "The path to the Dockerfile"
+    required: false
+runs:
+  using: "composite"
+  steps:
+  # https://docs.github.com/en/actions/creating-actions/creating-a-composite-action#creating-an-action-metadata-file
+  - name: Set GitHub Path
+    run: echo "$GITHUB_ACTION_PATH" >> $GITHUB_PATH
+    shell: bash
+    env:
+      GITHUB_ACTION_PATH: ${{ github.action_path }}
+  - name: "check_dockerignore.sh"
+    env:
+      DOCKERFILE: ${{ inputs.dockerfile }}
+      BUILD_CONTEXT: ${{ inputs.build-context }}
+    shell: bash
+    run: |
+      if [ -z "$DOCKERFILE" ]; then
+        check_dockerignore.sh check-dockerignore "$BUILD_CONTEXT"
+      else
+        check_dockerignore.sh check-dockerignore --file "$DOCKERFILE" "$BUILD_CONTEXT"
+      fi
